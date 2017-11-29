@@ -10,7 +10,6 @@ class HalsteadMetric
   @@BRACKETS = [
       "(", "[", "{"
   ]
-  # "(", ")", "[", "]", ".", "?:","{", "}", ";",  ","
   @@RES_WORDS = [
       "not", "while", "rescue", "and", "or", "if", "when", "unless",
       "case", "until", "begin", "for", "new", "elsif"
@@ -35,35 +34,32 @@ class HalsteadMetric
     brackets = []
     @code_text.select {|line| !@@IGNORE_WORDS.find {|word| /^.*\b#{word}\b.*$/ === line}}.each do |line|
       (
-      @operands[line[/".*"/]] = 0 if @operands[line[/".*"/]].nil?
-      @operands[line[/".*"/]] += 1
-      line.sub!(/".*"/, " ")
+        @operands[line[/".*"/]] = 0 if @operands[line[/".*"/]].nil?
+        @operands[line[/".*"/]] += 1
+        line.sub!(/".*"/, " ")
       ) while /^.*".*".*$/ === line
       @@RES_WORDS.each do |word|
         words_line = line
         (
-        @operators[word] = 0 if @operators[word].nil?
-        @operators[word] += 1
-        line.sub!(/\b#{Regexp.escape word}\b/, " ")
+          @operators[word] = 0 if @operators[word].nil?
+          @operators[word] += 1
+          line.sub!(/\b#{Regexp.escape word}\b/, " ")
         ) while /^.*\b#{Regexp.escape word}\b.*$/ === line
       end
       @@PURE_OPS.each do |op|
-        # op = "\\" + op if op == "*" || op == "/" || op == "+" || op == "|"
-        # op = "\\*\\*" if op == "**"
         ops_line = line
         (
-            # op = "\\" + op if op == "*" || op == "/"
-        @operators[op] = 0 if @operators[op].nil?
-        @operators[op] += 1
-        line.sub!(/\s#{Regexp.escape op}\s/, " ")
+          @operators[op] = 0 if @operators[op].nil?
+          @operators[op] += 1
+          line.sub!(/\s#{Regexp.escape op}\s/, " ")
         ) while /^.*\s#{Regexp.escape op}\s.*$/ === line
       end
       @@BRACKETS.each do |br|
         br_line = line
         (
-        @operators[br] = 0 if @operators[br].nil?
-        @operators[br] += 1
-        line.sub!(/\s#{Regexp.escape br}/, " ")
+          @operators[br] = 0 if @operators[br].nil?
+          @operators[br] += 1
+          line.sub!(/\s#{Regexp.escape br}/, " ")
         ) while /^.*\s#{Regexp.escape br}.*$/ === line
       end
       line.split(/\s+/).map {|literal| literal.gsub(/[\)\]\}]/, "")}.each do |literal|
@@ -87,31 +83,7 @@ class HalsteadMetric
 
   end
   private :calculate
-=begin
-main()
-{
-    int a, b, c, avg;
-    scanf("%d %d %d", &a, &b, &c);
-    avg = (a + b + c) / 3;
-    printf("avg = %d", avg);
-}
 
-operators:  main, (), {}, int, scanf, &, =, +, /, printf,',', ;
-operands: a, b, c, avg, "%d %d %d", 3, "avg = %d"
-
-def main
-  a = gets
-  b = gets
-  c = gets
-  avg = (a + b + c) / 3
-  puts "avg = #{avg}"
-end
-
-Ruby operators: !, ~, +, **, *, /, %, -, >>, <<, &, |, ^, <, <=, >=, >, ==, ===,
-                !=, =~, !~, <=>, &&, ||, ?:, Rescue, =, **=, *=, /=, %=, +=, -=,
-                <<=, >>=, &&=, &=, ||=, |=, ^=, defined?, not, and, or, if, while,
-                unless, until, .., ...
-=end
   def show
     size  = @operands.length > @operators.length ? @operands.length : @operators.length;
     printf("%3s  %15s   %3s  | %3s   %15s  %3s\n", "j", "operators", "f1j", "i", "operand", "f2i")
